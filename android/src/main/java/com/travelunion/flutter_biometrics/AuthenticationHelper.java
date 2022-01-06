@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,11 +16,10 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 
 import androidx.biometric.BiometricPrompt;
 import androidx.biometric.BiometricPrompt.CryptoObject;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import java.util.concurrent.Executor;
@@ -154,7 +155,7 @@ class AuthenticationHelper extends BiometricPrompt.AuthenticationCallback
         TextView description = (TextView) view.findViewById(R.id.go_to_setting_description);
         message.setText((String) call.argument("required"));
         description.setText((String) call.argument("settingsDescription"));
-        Context context = new ContextThemeWrapper(activity, R.style.AlertDialogCustom);
+        final Context context = new ContextThemeWrapper(activity, R.style.AlertDialogCustom);
         OnClickListener goToSettingHandler =
                 new OnClickListener() {
                     @Override
@@ -172,12 +173,21 @@ class AuthenticationHelper extends BiometricPrompt.AuthenticationCallback
                         stop();
                     }
                 };
-        new AlertDialog.Builder(context)
+        final AlertDialog dialog = new AlertDialog.Builder(context)
                 .setView(view)
                 .setPositiveButton((String) call.argument("settings"), goToSettingHandler)
                 .setNegativeButton((String) call.argument("cancel"), cancelHandler)
                 .setCancelable(false)
-                .show();
+                .create();
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(context, R.color.black_text));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(context, R.color.black_text));
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(context, R.color.black_text));
+            }
+        });
+        dialog.show();
     }
 
     // Unused methods for activity lifecycle.
